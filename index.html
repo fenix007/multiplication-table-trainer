@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Таблица — тренажёр умножения</title>
+<meta name="theme-color" content="#4f5dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Таблица">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --ink:#1d2340; --muted:#6b7390;
+  --brand:#4f5dff; --brand-dark:#3a46d6; --mint:#22c58b; --sun:#ffb020; --coral:#ff5d6c; --gold:#e6a800;
+  --new:#e4e7f0; --lvl0:#ff8a94; --lvl1:#ffc88a; --lvl2:#ffe27a; --lvl3:#b8e986; --lvl4:#5fd68f; --lvl5:#ffcc33;
+  --radius:22px; --shadow:0 8px 24px rgba(29,35,64,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-weight:700;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+#app{min-height:100%;display:flex;flex-direction:column}
+.screen{flex:1;display:flex;flex-direction:column;max-width:900px;width:100%;margin:0 auto;padding:18px 20px 28px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;min-height:44px}
+.topbar h2{margin:0;font-size:22px;font-weight:900}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:8px 14px;font-size:15px;box-shadow:var(--shadow)}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:var(--radius);padding:18px 22px;font-size:20px;font-weight:900;background:var(--card);box-shadow:var(--shadow);transition:transform .08s,box-shadow .08s;position:relative;text-align:left}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--brand);color:#fff}
+.btn.mint{background:var(--mint);color:#fff}
+.btn.sun{background:var(--sun);color:#fff}
+.btn.coral{background:var(--coral);color:#fff}
+.btn.ghost{background:transparent;box-shadow:none;color:var(--muted);font-size:16px;padding:10px 14px}
+.btn.small{padding:12px 18px;font-size:16px;border-radius:16px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.badge{position:absolute;top:-8px;right:-8px;background:var(--coral);color:#fff;border-radius:999px;min-width:28px;height:28px;padding:0 8px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+.btn .ico{font-size:30px;line-height:1}
+.btn .lbl{flex:1}
+.btn .sub{display:block;font-size:13px;font-weight:700;opacity:.8;margin-top:2px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+@media (max-width:560px){.menu{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.hero h1{margin:0;font-size:28px;font-weight:900}
+.hero p{margin:4px 0 0;color:var(--muted);font-size:15px}
+.progress{height:14px;background:#e9ecf5;border-radius:999px;overflow:hidden}
+.progress > div{height:100%;background:linear-gradient(90deg,var(--mint),#7be3b7);border-radius:999px;transition:width .4s}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+.big{font-size:clamp(28px,6vw,44px);font-weight:900;margin:0}
+.lead{color:var(--muted);font-size:18px;max-width:560px;margin:0}
+/* quiz */
+.quiz{flex:1;display:flex;flex-direction:column;gap:14px}
+.timer{height:10px;background:#e9ecf5;border-radius:999px;overflow:hidden}
+.timer > div{height:100%;background:var(--brand);border-radius:999px;transform-origin:left}
+.timer.hidden{visibility:hidden}
+.question{flex:1;display:flex;align-items:center;justify-content:center;min-height:150px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);font-size:clamp(46px,11vw,92px);font-weight:900;letter-spacing:2px;transition:background .15s,color .15s;padding:10px 16px;text-align:center;flex-wrap:wrap;gap:0 14px}
+.question .ans{min-width:1.3em;border-bottom:6px solid var(--brand);color:var(--brand);line-height:1.1;display:inline-block;text-align:center}
+.question .ans.placeholder{color:#c5c9db}
+.question.ok{background:var(--mint);color:#fff}
+.question.ok .ans{color:#fff;border-color:#fff}
+.question.bad{background:var(--coral);color:#fff}
+.question.bad .ans{color:#fff;border-color:#fff}
+.feedback{min-height:28px;text-align:center;font-size:20px;font-weight:900;color:var(--muted)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;width:100%;margin:0 auto}
+.numpad button{height:64px;border-radius:18px;background:var(--card);box-shadow:var(--shadow);font-size:30px;font-weight:900}
+.numpad button:active{transform:scale(.95);background:#eef0ff}
+.numpad button.del{font-size:24px;color:var(--coral)}
+.numpad button.ok{background:var(--brand);color:#fff}
+@media (max-height:640px){.numpad button{height:52px;font-size:26px}.question{min-height:110px}}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:15px}
+/* map */
+.grid{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;max-width:620px;margin:0 auto;width:100%}
+.cell{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,2.4vw,18px);font-weight:900;background:var(--new);color:var(--ink);position:relative}
+.cell.head{background:transparent;color:var(--muted);font-size:clamp(13px,2.6vw,20px)}
+.cell.new{background:var(--new);color:#9aa0b8}
+.cell.l0{background:var(--lvl0);color:#fff}.cell.l1{background:var(--lvl1)}.cell.l2{background:var(--lvl2)}.cell.l3{background:var(--lvl3)}.cell.l4{background:var(--lvl4);color:#fff}.cell.l5{background:var(--lvl5);box-shadow:inset 0 0 0 2px #fff, 0 0 0 2px var(--gold)}
+.cell.trivial{background:#f6f7fb;color:#c3c7d8}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;margin-top:16px;font-size:14px;color:var(--muted)}
+.legend span i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.stat{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:14px;text-align:center}
+.stat b{display:block;font-size:30px;font-weight:900}
+.stat span{color:var(--muted);font-size:13px}
+/* parent */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #eef0f6}
+th{color:var(--muted);font-weight:800}
+.heat{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;max-width:560px}
+.heat .cell{border-radius:8px;font-size:clamp(9px,1.8vw,13px)}
+.pin{display:flex;gap:10px;justify-content:center;margin:10px 0 18px}
+.pin i{width:18px;height:18px;border-radius:50%;background:#dfe3ef;display:block}
+.pin i.on{background:var(--brand)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.section{margin-top:22px}
+.section h3{margin:0 0 10px;font-size:18px}
+input[type=range]{width:100%}
+.hint{background:#fff7e0;border-radius:16px;padding:12px 16px;font-size:16px;color:#6a5100;text-align:center}
+.learncard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 20px;text-align:center}
+.learncard .fact{font-size:clamp(44px,10vw,84px);font-weight:900;color:var(--brand)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.tag.known{background:#dff5e8;color:#157347}.tag.computed{background:#fff1cc;color:#8a6100}.tag.new{background:#eceef6;color:#6b7390}
+.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pop{animation:pop .3s}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+svg.chart{width:100%;height:160px;background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===================== ENGINE-START =====================
+const TABLES_ORDER = [2,5,9,3,4,6,7,8];
+const INTERVALS = [0, 10*60e3, 864e5, 3*864e5, 7*864e5, 30*864e5];
+const LEVEL_BONUS = [1500,1500,500,500,0,0];
+const DIAG_TIMEOUT = 8000;
+const DIAG_KNOWN = 3500;
+
+function factKey(a,b){ if(a>b){[a,b]=[b,a];} return a+'x'+b; }
+function parseKey(k){ const [a,b]=k.split('x').map(Number); return {a,b}; }
+function newFact(a,b){ return {a,b,key:factKey(a,b),learned:false,level:0,due:0,seen:0,correct:0,wrong:0,times:[],intro:0}; }
+function allFacts(){
+  const out={};
+  for(let a=2;a<=9;a++) for(let b=a;b<=9;b++){ out[factKey(a,b)]=newFact(a,b); }
+  return out;
+}
+function learnOrder(){
+  const order=[]; const seen=new Set();
+  const push=(a,b)=>{ const k=factKey(a,b); if(!seen.has(k)){seen.add(k);order.push(k);} };
+  for(let n=2;n<=9;n++) push(n,n);
+  for(const t of TABLES_ORDER) for(let n=2;n<=9;n++) push(t,n);
+  return order;
+}
+const LEARN_ORDER = learnOrder();
+function limitFor(level, base){ return base + LEVEL_BONUS[Math.min(level,5)]; }
+function statusOf(f){ if(!f.learned) return 'new'; return f.level>=3 ? 'known' : 'computed'; }
+function avgTime(f){ if(!f.times.length) return null; return Math.round(f.times.reduce((s,x)=>s+x,0)/f.times.length); }
+function pushTime(f,ms){ f.times.push(ms); if(f.times.length>5) f.times.shift(); }
+
+function applyDiag(f, correct, ms, now){
+  f.seen++;
+  if(correct){ f.correct++; pushTime(f,ms); } else f.wrong++;
+  if(correct && ms<=DIAG_KNOWN){ f.learned=true; f.level=3; f.due=now+INTERVALS[3]; }
+  else if(correct){ f.learned=true; f.level=1; f.due=now+INTERVALS[1]; }
+  else { f.learned=false; f.level=0; f.due=now; }
+  return statusOf(f);
+}
+
+function applyReview(f, correct, ms, limit, now, isDue){
+  f.seen++;
+  if(!correct){ f.wrong++; f.level=0; f.due=now; return 'wrong'; }
+  f.correct++; pushTime(f,ms);
+  const fast = ms<=limit;
+  if(fast){
+    if(isDue){ f.level=Math.min(5,f.level+1); f.due=now+INTERVALS[f.level]; }
+    return 'fast';
+  }
+  if(f.level>=2) f.level--;
+  f.due=now+INTERVALS[Math.min(f.level,1)];
+  return 'slow';
+}
+
+function buildReviewQueue(facts, now, max=20, min=8){
+  const learned=Object.values(facts).filter(f=>f.learned);
+  const due=learned.filter(f=>f.due<=now).sort((x,y)=>x.level-y.level||x.due-y.due);
+  const q=due.slice(0,max).map(f=>({key:f.key,isDue:true}));
+  if(q.length<min){
+    const rest=learned.filter(f=>f.due>now).sort((x,y)=>x.level-y.level||(avgTime(y)||0)-(avgTime(x)||0));
+    for(const f of rest){ if(q.length>=min) break; q.push({key:f.key,isDue:false}); }
+  }
+  return q;
+}
+function pickNewFacts(facts, n){
+  const out=[]; for(const k of LEARN_ORDER){ if(!facts[k].learned){ out.push(k); if(out.length>=n) break; } } return out;
+}
+function weakCount(facts){ return Object.values(facts).filter(f=>f.learned&&f.level<=1).length; }
+function summary(facts){
+  const s={known:0,computed:0,new:0,total:0};
+  for(const f of Object.values(facts)){ s[statusOf(f)]++; s.total++; }
+  return s;
+}
+function hintFor(a,b){
+  if(a===b) return `${a}×${a} — квадрат числа ${a}. Квадраты стоят на диагонали таблицы.`;
+  const lo=Math.min(a,b), hi=Math.max(a,b);
+  if(lo===2) return `Умножить на 2 — значит удвоить: ${hi}+${hi}=${hi*2}.`;
+  if(lo===5) return `На 5: ответ оканчивается на 0 или 5. ${hi} — ${hi%2?'нечётное':'чётное'}, значит ${hi*5}.`;
+  if(hi===9||lo===9) { const o=lo===9?hi:lo; return `На 9: первая цифра ${o-1}, а цифры в сумме дают 9: ${o-1}+${9-(o-1)}=9 → ${o*9}.`; }
+  if(lo===4) return `На 4 — удвой дважды: ${hi}→${hi*2}→${hi*4}.`;
+  if(lo===3) return `На 3: ${hi}+${hi}+${hi}=${hi*3}. Теперь просто запомни!`;
+  if(lo===6) return `На 6 — это ×5 плюс ещё раз: ${hi*5}+${hi}=${hi*6}.`;
+  if(lo===8) return `На 8 — удвой три раза: ${hi}→${hi*2}→${hi*4}→${hi*8}.`;
+  if(lo===7) return `Семёрка — самая хитрая. Здесь помогает только память: ${a}×${b}=${a*b}.`;
+  return `${a}×${b}=${a*b}`;
+}
+// ===================== ENGINE-END =====================
+
+// ---------- state ----------
+const KEY='mult-trainer-v1';
+const DEFAULT = ()=>({facts:allFacts(),sessions:[],snapshots:{},pin:'1234',baseLimit:3500,dailyGoal:30,sprintRecord:0,diagDone:false,name:''});
+let S = load();
+function load(){ try{ const raw=localStorage.getItem(KEY); if(!raw) return DEFAULT(); const s=JSON.parse(raw); const d=DEFAULT(); for(const k in d) if(!(k in s)) s[k]=d[k]; for(const k in d.facts) if(!s.facts[k]) s.facts[k]=d.facts[k]; return s; }catch(e){ return DEFAULT(); } }
+let storageWarned=false;
+function save(){ snapshot(); try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ if(!storageWarned){ storageWarned=true; console.warn('Хранилище недоступно: прогресс не сохранится после закрытия страницы'); } } }
+function dayStr(t=Date.now()){ const d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function snapshot(){ S.snapshots[dayStr()]=summary(S.facts); }
+function todayStats(){ const d=dayStr(); let answers=0,correct=0,ms=0; for(const s of S.sessions) if(s.day===d){answers+=s.answers;correct+=s.correct;ms+=s.ms;} return {answers,correct,minutes:Math.round(ms/60000)}; }
+function streak(){
+  const goalDays=new Set(); const byDay={};
+  for(const s of S.sessions){ byDay[s.day]=(byDay[s.day]||0)+s.answers; }
+  for(const d in byDay) if(byDay[d]>=S.dailyGoal) goalDays.add(d);
+  let n=0; let t=Date.now();
+  if(!goalDays.has(dayStr(t))) t-=864e5;
+  while(goalDays.has(dayStr(t))){ n++; t-=864e5; }
+  return n;
+}
+let session=null;
+function startSession(mode){ session={mode,start:Date.now(),answers:0,correct:0}; }
+function logAnswer(ok){ if(session){session.answers++; if(ok) session.correct++;} }
+function endSession(){ if(session&&session.answers>0){ S.sessions.push({day:dayStr(),mode:session.mode,start:session.start,ms:Date.now()-session.start,answers:session.answers,correct:session.correct}); save(); } session=null; }
+
+// ---------- helpers ----------
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function render(html){ app.innerHTML=`<div class="screen">${html}</div>`; }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+const rnd=arr=>arr[Math.floor(Math.random()*arr.length)];
+const PRAISE=['Отлично!','Точно!','Да!','Молодец!','Есть!','Супер!','Верно!','Класс!'];
+const SLOW=['Верно, но давай быстрее','Правильно! Попробуй не считать, а вспомнить','Верно — в следующий раз быстрее'];
+let quiz=null; // active quiz controller
+document.addEventListener('keydown',e=>{ if(!quiz) return; if(e.key>='0'&&e.key<='9'){quiz.key(e.key);e.preventDefault();} else if(e.key==='Backspace'){quiz.del();e.preventDefault();} else if(e.key==='Enter'){quiz.submit();e.preventDefault();} });
+
+// ---------- quiz component ----------
+// opts: {a,b,inverse,limit (ms|0), onDone(res), header, meta}
+function askQuestion(opts){
+  const {a,b,inverse}=opts; const answer=inverse?a:a*b; const expLen=String(answer).length;
+  const [x,y]=Math.random()<.5?[a,b]:[b,a];
+  const qText = inverse ? `<span class="ans placeholder" id="ans">?</span> × ${b} = ${a*b}` : `${x} × ${y} = <span class="ans placeholder" id="ans">?</span>`;
+  render(`
+    <div class="topbar"><button class="btn ghost" id="home">← Домой</button><div class="chip">${opts.header||''}</div><div class="chip">${opts.meta||''}</div></div>
+    <div class="quiz">
+      <div class="timer ${opts.limit?'':'hidden'}"><div id="tbar" style="width:100%"></div></div>
+      <div class="question" id="q">${qText}</div>
+      <div class="feedback" id="fb">${opts.prompt||''}</div>
+      <div class="numpad">
+        ${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}
+        <button class="del" data-k="del">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok">✓</button>
+      </div>
+    </div>`);
+  const ansEl=document.getElementById('ans'), qEl=document.getElementById('q'), fbEl=document.getElementById('fb'), tbar=document.getElementById('tbar');
+  let typed='', done=false, t0=performance.now(), raf=null, timeoutId=null, submitTimer=null;
+  document.getElementById('home').onclick=()=>{ cleanup(); endSession(); home(); };
+  app.querySelectorAll('.numpad button').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.k; if(k==='del') quiz.del(); else if(k==='ok') quiz.submit(); else quiz.key(k); });
+  function show(){ ansEl.textContent=typed||'?'; ansEl.classList.toggle('placeholder',!typed); }
+  function cleanup(){ quiz=null; if(raf) cancelAnimationFrame(raf); if(timeoutId) clearTimeout(timeoutId); if(submitTimer) clearTimeout(submitTimer); }
+  if(opts.limit){
+    const tick=()=>{ const left=Math.max(0,1-(performance.now()-t0)/opts.limit); tbar.style.width=(left*100)+'%'; tbar.style.background=left<.3?'var(--coral)':'var(--brand)'; if(!done) raf=requestAnimationFrame(tick); };
+    raf=requestAnimationFrame(tick);
+    timeoutId=setTimeout(()=>{ if(!done) finish(false,opts.limit,true); },opts.limit);
+  }
+  function finish(correct,ms,timeout){
+    if(done) return; done=true; cleanup();
+    qEl.classList.add(correct?'ok':'bad'); if(!correct) qEl.classList.add('shake'); else qEl.classList.add('pop');
+    if(correct){ fbEl.textContent=rnd(PRAISE); fbEl.style.color='var(--mint)'; setTimeout(()=>opts.onDone({correct:true,ms,timeout:false}),650); }
+    else {
+      ansEl.textContent=answer; ansEl.classList.remove('placeholder');
+      fbEl.style.color='var(--coral)'; fbEl.textContent=timeout?`Время вышло. ${a} × ${b} = ${a*b}`:`Не так. ${a} × ${b} = ${a*b}`;
+      setTimeout(()=>retype(()=>opts.onDone({correct:false,ms,timeout})),1400);
+    }
+  }
+  function retype(cb){
+    // make child type the right answer once, without timer
+    askQuestion({a,b,inverse,limit:0,header:opts.header,meta:opts.meta,prompt:`Запиши правильный ответ: ${a} × ${b} = ${a*b}`,onDone:r=>{ if(r.correct) cb(); else retype(cb); }});
+  }
+  quiz={
+    key(k){ if(done) return; if(typed.length>=3) return; typed+=k; show(); if(typed.length>=expLen){ submitTimer=setTimeout(()=>quiz&&quiz.submit(),120); } },
+    del(){ if(done) return; typed=typed.slice(0,-1); show(); },
+    submit(){ if(done||!typed) return; const ms=Math.round(performance.now()-t0); finish(Number(typed)===answer,ms,false); }
+  };
+}
+
+// ---------- screens ----------
+function home(){
+  quiz=null;
+  if(!S.diagDone) return introScreen();
+  const now=Date.now(); const sum=summary(S.facts); const due=buildReviewQueue(S.facts,now,99,0).length;
+  const newLeft=sum.new; const t=todayStats(); const st=streak(); const pct=Math.min(100,Math.round(t.answers/S.dailyGoal*100));
+  const canLearn=newLeft>0 && weakCount(S.facts)<8;
+  const sprintPool=Object.values(S.facts).filter(f=>f.learned&&f.level>=2).length;
+  render(`
+    <div class="hero"><div><h1>Привет${S.name?', '+esc(S.name):''}! 👋</h1><p>Выучено наизусть: <b>${sum.known}</b> из ${sum.total} · считает: ${sum.computed} · новых: ${sum.new}</p></div><div class="chip">🔥 ${st} ${st===1?'день':st>=2&&st<=4?'дня':'дней'}</div></div>
+    <div class="card"><div class="meta"><span>Сегодня: ${t.answers} из ${S.dailyGoal} ответов</span><span>${t.minutes} мин</span></div><div class="progress" style="margin-top:8px"><div style="width:${pct}%"></div></div>${pct>=100?'<div style="margin-top:8px;color:var(--mint);font-weight:900">Цель дня выполнена! 🎉</div>':''}</div>
+    <div class="menu">
+      <button class="btn primary" id="review"><span class="ico">🔁</span><span class="lbl">Повторяю<span class="sub">${due?due+' примеров ждут':'всё повторено — можно потренироваться'}</span></span>${due?`<span class="badge">${due}</span>`:''}</button>
+      <button class="btn mint" id="learn" ${canLearn?'':'disabled'}><span class="ico">✨</span><span class="lbl">Учу новое<span class="sub">${newLeft?canLearn?'осталось выучить: '+newLeft:'сначала закрепи слабые':'все примеры уже знакомы!'}</span></span></button>
+      <button class="btn sun" id="sprint" ${sprintPool>=8?'':'disabled'}><span class="ico">⚡</span><span class="lbl">Спринт 60 с<span class="sub">${sprintPool>=8?'рекорд: '+S.sprintRecord:'откроется, когда освоишь 8 примеров'}</span></span></button>
+      <button class="btn" id="map"><span class="ico">🗺️</span><span class="lbl">Карта таблицы<span class="sub">закрашено ${sum.known} из ${sum.total}</span></span></button>
+    </div>
+    <div class="row" style="justify-content:space-between;margin-top:22px"><button class="btn ghost" id="diag">🔍 Проверка всей таблицы</button><button class="btn ghost" id="parent">👨‍👩‍👦 Для родителей</button></div>`);
+  document.getElementById('review').onclick=reviewMode;
+  document.getElementById('learn').onclick=learnMode;
+  document.getElementById('sprint').onclick=sprintMode;
+  document.getElementById('map').onclick=mapScreen;
+  document.getElementById('diag').onclick=()=>diagMode(true);
+  document.getElementById('parent').onclick=pinScreen;
+}
+
+function introScreen(){
+  render(`<div class="center">
+    <div style="font-size:72px">✖️</div>
+    <h1 class="big">Таблица умножения</h1>
+    <p class="lead">Сначала проверим, что ты уже знаешь. Будет 36 примеров — отвечай как можно быстрее. Если не знаешь — не страшно, просто жди, ответ покажется сам.</p>
+    <div class="card" style="width:100%;max-width:420px"><label style="color:var(--muted);font-size:14px">Как тебя зовут?</label><input id="name" style="width:100%;font:inherit;font-size:22px;padding:10px 14px;border-radius:14px;border:2px solid #e4e7f0;margin-top:6px" value="${esc(S.name)}" placeholder="Имя"></div>
+    <button class="btn primary" id="go" style="min-width:260px;justify-content:center">Начать проверку →</button>
+  </div>`);
+  document.getElementById('go').onclick=()=>{ S.name=document.getElementById('name').value.trim(); save(); diagMode(false); };
+}
+
+// ---- diagnostic ----
+function diagMode(fromHome){
+  const keys=shuffle(Object.keys(S.facts)); let i=0; const results={known:[],computed:[],new:[]};
+  startSession('diag');
+  const next=()=>{
+    if(i>=keys.length){ S.diagDone=true; endSession(); save(); return diagResult(results); }
+    const f=S.facts[keys[i]];
+    askQuestion({a:f.a,b:f.b,limit:DIAG_TIMEOUT,header:'🔍 Проверка',meta:`${i+1} / ${keys.length}`,onDone:r=>{ const st=applyDiag(f,r.correct,r.ms,Date.now()); results[st].push(f.key); logAnswer(r.correct); i++; save(); next(); }});
+  };
+  next();
+}
+function diagResult(res){
+  const sum=summary(S.facts);
+  render(`<div class="center">
+    <h1 class="big">Проверка пройдена! 🎯</h1>
+    <div class="stats" style="width:100%;max-width:520px">
+      <div class="stat"><b style="color:var(--mint)">${sum.known}</b><span>знаю наизусть</span></div>
+      <div class="stat"><b style="color:var(--sun)">${sum.computed}</b><span>считаю</span></div>
+      <div class="stat"><b style="color:var(--coral)">${sum.new}</b><span>пока не знаю</span></div>
+    </div>
+    <p class="lead">Всего примеров 36 — остальное получается перестановкой (7×8 = 8×7). Те, что ты считаешь, будем повторять до автоматизма, а новые — учить по 3 штуки.</p>
+    <button class="btn primary" id="go" style="min-width:240px;justify-content:center">К карте таблицы →</button>
+  </div>`);
+  document.getElementById('go').onclick=mapScreen;
+}
+
+// ---- review ----
+function reviewMode(){
+  const now=Date.now(); const queue=buildReviewQueue(S.facts,now);
+  if(!queue.length){ return message('Пока нечего повторять 🙌','Выучи новые примеры или устрой спринт. Повторения появятся позже — так и запоминается надолго.'); }
+  startSession('review'); let i=0, fastCount=0; const total=queue.length; const extra=[]; // retries
+  const next=()=>{
+    let item=queue[i]; if(!item){ item=extra.shift(); }
+    if(!item){ endSession(); return sessionResult('Повторение закончено! 💪',fastCount,total); }
+    const f=S.facts[item.key]; const limit=limitFor(f.level,S.baseLimit);
+    const inverse = f.level>=4 && Math.random()<0.3;
+    askQuestion({a:f.a,b:f.b,inverse,limit,header:'🔁 Повторяю',meta:`${Math.min(i+1,total)} / ${total}`,onDone:r=>{
+      const res=applyReview(f,r.correct,r.ms,limit,Date.now(),item.isDue); logAnswer(r.correct);
+      if(res==='fast') fastCount++;
+      if(res!=='fast' && !item.retry){ extra.push({key:item.key,isDue:false,retry:true}); }
+      if(i<total) i++; save(); next(); }});
+  };
+  next();
+}
+function sessionResult(title,fast,total){
+  const t=todayStats(); const goal=t.answers>=S.dailyGoal;
+  render(`<div class="center"><h1 class="big">${title}</h1>
+    <div class="stats" style="width:100%;max-width:520px"><div class="stat"><b>${total}</b><span>примеров</span></div><div class="stat"><b style="color:var(--mint)">${fast}</b><span>быстро и верно</span></div><div class="stat"><b>${t.answers}/${S.dailyGoal}</b><span>за сегодня</span></div></div>
+    ${goal?'<div class="hint">Цель дня выполнена — серия растёт! 🔥</div>':`<p class="lead">До цели дня ещё ${S.dailyGoal-t.answers} ответов.</p>`}
+    <div class="row"><button class="btn primary" id="again">Ещё раз</button><button class="btn" id="home">Домой</button></div></div>`);
+  document.getElementById('again').onclick=reviewMode; document.getElementById('home').onclick=home;
+}
+function message(title,text){
+  render(`<div class="center"><h1 class="big">${title}</h1><p class="lead">${text}</p><button class="btn primary" id="home">Домой</button></div>`);
+  document.getElementById('home').onclick=home;
+}
+
+// ---- learn ----
+function learnMode(){
+  const n = weakCount(S.facts)===0 ? 4 : 3;
+  const keys=pickNewFacts(S.facts,n);
+  if(!keys.length) return message('Все примеры уже знакомы! 🎉','Теперь главное — повторять, пока каждый не станет золотым.');
+  startSession('learn'); let idx=0;
+  const showCard=()=>{
+    if(idx>=keys.length) return learnQuiz(keys);
+    const f=S.facts[keys[idx]];
+    render(`<div class="topbar"><button class="btn ghost" id="home">← Домой</button><div class="chip">✨ Новый пример ${idx+1} / ${keys.length}</div><div></div></div>
+      <div class="center"><div class="learncard" style="width:100%;max-width:560px"><div class="fact">${f.a} × ${f.b} = ${f.a*f.b}</div><p class="lead" style="margin-top:14px">${f.a!==f.b?`и наоборот: ${f.b} × ${f.a} = ${f.a*f.b}`:''}</p></div>
+      <div class="hint">${hintFor(f.a,f.b)}</div>
+      <p class="lead">Прочитай вслух три раза. Потом нажми — и напиши ответ сам.</p>
+      <button class="btn primary" id="go" style="min-width:240px;justify-content:center">Запомнил, пишу сам →</button></div>`);
+    document.getElementById('home').onclick=()=>{endSession();home();};
+    document.getElementById('go').onclick=()=>askQuestion({a:f.a,b:f.b,limit:0,header:'✨ Учу',meta:`${idx+1} / ${keys.length}`,onDone:r=>{ logAnswer(r.correct); f.intro=Date.now(); idx++; showCard(); }});
+  };
+  showCard();
+}
+function learnQuiz(keys){
+  // each new fact needs 2 fast correct in a row; interleave with known facts
+  const need={}; keys.forEach(k=>need[k]=2);
+  const known=Object.values(S.facts).filter(f=>f.learned&&f.level>=2).map(f=>f.key);
+  let count=0, sinceKnown=0;
+  const next=()=>{
+    const left=keys.filter(k=>need[k]>0);
+    if(!left.length){ keys.forEach(k=>{ const f=S.facts[k]; f.learned=true; f.level=1; f.due=Date.now()+INTERVALS[1]; }); endSession(); save(); return learnResult(keys); }
+    let key, isNew=true;
+    if(known.length && sinceKnown>=2 && Math.random()<.6){ key=rnd(known); isNew=false; sinceKnown=0; } else { key=rnd(left); sinceKnown++; }
+    const f=S.facts[key]; const limit=isNew?6000:limitFor(f.level,S.baseLimit);
+    askQuestion({a:f.a,b:f.b,limit,header:'✨ Учу',meta:`осталось: ${left.reduce((s,k)=>s+need[k],0)}`,onDone:r=>{
+      count++; logAnswer(r.correct);
+      if(isNew){ f.seen++; if(r.correct){ f.correct++; pushTime(f,r.ms); need[key]=Math.max(0,need[key]-1); } else { f.wrong++; need[key]=2; } }
+      else applyReview(f,r.correct,r.ms,limit,Date.now(),false);
+      save(); next(); }});
+  };
+  next();
+}
+function learnResult(keys){
+  render(`<div class="center"><h1 class="big">Новые примеры в копилке! ✨</h1>
+    <div class="row" style="justify-content:center">${keys.map(k=>{const f=S.facts[k];return `<div class="chip" style="font-size:22px">${f.a} × ${f.b} = ${f.a*f.b}</div>`;}).join('')}</div>
+    <p class="lead">Через 10 минут они появятся в «Повторяю». Если ответишь быстро — поднимутся на уровень выше.</p>
+    <div class="row"><button class="btn primary" id="rev">Повторяю</button><button class="btn" id="home">Домой</button></div></div>`);
+  document.getElementById('rev').onclick=reviewMode; document.getElementById('home').onclick=home;
+}
+
+// ---- sprint ----
+function sprintMode(){
+  const pool=Object.values(S.facts).filter(f=>f.learned&&f.level>=2);
+  if(pool.length<8) return message('Спринт ещё закрыт ⚡','Освой хотя бы 8 примеров — и спринт откроется.');
+  render(`<div class="center"><div style="font-size:72px">⚡</div><h1 class="big">Спринт: 60 секунд</h1><p class="lead">Сколько примеров успеешь решить? Только те, что ты уже знаешь. Рекорд: <b>${S.sprintRecord}</b></p><button class="btn sun" id="go" style="min-width:240px;justify-content:center">Старт!</button><button class="btn ghost" id="home">Домой</button></div>`);
+  document.getElementById('home').onclick=home;
+  document.getElementById('go').onclick=()=>{
+    startSession('sprint'); const end=Date.now()+60000; let ok=0, tot=0, last=null;
+    const next=()=>{
+      const leftMs=end-Date.now(); if(leftMs<=0){ endSession(); const rec=ok>S.sprintRecord; if(rec) S.sprintRecord=ok; save(); return sprintResult(ok,tot,rec); }
+      let f; do{ f=rnd(pool);}while(pool.length>1&&f.key===last); last=f.key;
+      askQuestion({a:f.a,b:f.b,limit:Math.min(8000,leftMs),header:'⚡ Спринт',meta:`⏱ ${Math.ceil(leftMs/1000)} с · ✓ ${ok}`,onDone:r=>{ tot++; if(r.correct) ok++; logAnswer(r.correct); f.seen++; if(r.correct){f.correct++;pushTime(f,r.ms);} else f.wrong++; next(); }});
+    };
+    next();
+  };
+}
+function sprintResult(ok,tot,rec){
+  render(`<div class="center"><h1 class="big">${rec?'Новый рекорд! 🏆':'Финиш! ⚡'}</h1><div class="stats" style="width:100%;max-width:520px"><div class="stat"><b style="color:var(--mint)">${ok}</b><span>верно</span></div><div class="stat"><b>${tot}</b><span>всего</span></div><div class="stat"><b>${S.sprintRecord}</b><span>рекорд</span></div></div>
+    <div class="row"><button class="btn sun" id="again">Ещё спринт</button><button class="btn" id="home">Домой</button></div></div>`);
+  document.getElementById('again').onclick=sprintMode; document.getElementById('home').onclick=home;
+}
+
+// ---- map ----
+function mapScreen(){
+  const sum=summary(S.facts);
+  let cells='<div class="cell head">×</div>'; for(let c=2;c<=9;c++) cells+=`<div class="cell head">${c}</div>`;
+  for(let r=2;r<=9;r++){ cells+=`<div class="cell head">${r}</div>`; for(let c=2;c<=9;c++){ const f=S.facts[factKey(r,c)]; const cls=f.learned?('l'+f.level):'new'; cells+=`<div class="cell ${cls}" title="${r}×${c}=${r*c}">${r*c}</div>`; } }
+  render(`<div class="topbar"><button class="btn ghost" id="home">← Домой</button><h2>Карта таблицы</h2><div class="chip">🏅 ${sum.known}/${sum.total}</div></div>
+    <div class="grid">${cells}</div>
+    <div class="legend"><span><i style="background:var(--new)"></i>ещё не учил</span><span><i style="background:var(--lvl0)"></i>ошибаюсь</span><span><i style="background:var(--lvl1)"></i>считаю</span><span><i style="background:var(--lvl2)"></i>почти знаю</span><span><i style="background:var(--lvl3)"></i>знаю</span><span><i style="background:var(--lvl4)"></i>знаю твёрдо</span><span><i style="background:var(--lvl5)"></i>золото — навсегда</span></div>
+    <p class="lead" style="text-align:center;margin-top:16px">Цель — закрасить всю таблицу золотом. Каждое быстрое повторение поднимает клетку на уровень.</p>`);
+  document.getElementById('home').onclick=home;
+}
+
+// ---- parent ----
+function pinScreen(){
+  let typed='';
+  render(`<div class="topbar"><button class="btn ghost" id="home">← Домой</button><h2>Для родителей</h2><div></div></div>
+    <div class="center"><p class="lead">Введите PIN</p><div class="pin" id="dots">${'<i></i>'.repeat(4)}</div><div class="feedback" id="fb"></div>
+    <div class="numpad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}<button class="del" data-k="del">⌫</button><button data-k="0">0</button><button data-k="ok" class="ok">✓</button></div></div>`);
+  document.getElementById('home').onclick=home;
+  const upd=()=>{ document.querySelectorAll('#dots i').forEach((d,i)=>d.classList.toggle('on',i<typed.length)); };
+  const check=()=>{ if(typed===S.pin) parentScreen(); else { document.getElementById('fb').textContent='Неверный PIN'; typed=''; upd(); } };
+  quiz={ key(k){ if(typed.length<4){typed+=k;upd(); if(typed.length===4) setTimeout(check,150);} }, del(){typed=typed.slice(0,-1);upd();}, submit(){ if(typed.length===4) check(); } };
+  app.querySelectorAll('.numpad button').forEach(b=>b.onclick=()=>{ const k=b.dataset.k; if(k==='del') quiz.del(); else if(k==='ok') quiz.submit(); else quiz.key(k); });
+}
+function fmtTime(ms){ return ms==null?'—':(ms/1000).toFixed(1)+' с'; }
+function parentScreen(){
+  quiz=null;
+  const facts=Object.values(S.facts); const sum=summary(S.facts);
+  // heatmap by avg time
+  let heat='<div class="cell head">×</div>'; for(let c=2;c<=9;c++) heat+=`<div class="cell head">${c}</div>`;
+  for(let r=2;r<=9;r++){ heat+=`<div class="cell head">${r}</div>`; for(let c=2;c<=9;c++){ const f=S.facts[factKey(r,c)]; const t=avgTime(f); let bg='var(--new)',col='#9aa0b8'; if(t!=null){ const k=Math.max(0,Math.min(1,(t-1500)/5000)); bg=`hsl(${120-120*k} 70% ${75-20*k}%)`; col='#1d2340'; } heat+=`<div class="cell" style="background:${bg};color:${col}" title="${r}×${c}: ${fmtTime(t)}, ошибок ${f.wrong}">${t!=null?(t/1000).toFixed(1):'·'}</div>`; } }
+  const weak=facts.filter(f=>f.learned&&(f.level<=1||(avgTime(f)||0)>S.baseLimit+1000||f.wrong>=3)).sort((x,y)=>(y.wrong-x.wrong)||((avgTime(y)||0)-(avgTime(x)||0))).slice(0,12);
+  const notLearned=facts.filter(f=>!f.learned);
+  const sessions=S.sessions.slice(-15).reverse();
+  const modeName={diag:'Проверка',review:'Повторение',learn:'Учу',sprint:'Спринт'};
+  // trend
+  const days=Object.keys(S.snapshots).sort().slice(-14);
+  const W=600,H=160,pad=24; const pts=days.map((d,i)=>{const s=S.snapshots[d]; const x=pad+(days.length>1?i*(W-2*pad)/(days.length-1):(W-2*pad)/2); return {x,y1:H-pad-(s.known/36)*(H-2*pad),y2:H-pad-((s.known+s.computed)/36)*(H-2*pad),d,s};});
+  const path=(k)=>pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p[k].toFixed(1)).join(' ');
+  const chart=days.length?`<svg class="chart" viewBox="0 0 ${W} ${H}"><line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#e4e7f0"/><line x1="${pad}" y1="${pad}" x2="${W-pad}" y2="${pad}" stroke="#e4e7f0" stroke-dasharray="4 4"/><text x="${pad}" y="${pad-6}" font-size="11" fill="#9aa0b8">36 — вся таблица</text>
+    <path d="${path('y2')}" fill="none" stroke="var(--sun)" stroke-width="3"/><path d="${path('y1')}" fill="none" stroke="var(--mint)" stroke-width="3"/>
+    ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y1}" r="4" fill="var(--mint)"/><text x="${p.x}" y="${H-6}" font-size="10" text-anchor="middle" fill="#9aa0b8">${p.d.slice(5)}</text>`).join('')}</svg>
+    <div class="legend" style="margin-top:6px"><span><i style="background:var(--mint)"></i>знает наизусть</span><span><i style="background:var(--sun)"></i>знает + считает</span></div>`:'<p class="lead">Данные появятся после первых занятий.</p>';
+  render(`<div class="topbar"><button class="btn ghost" id="home">← Домой</button><h2>Родительский экран</h2><div></div></div>
+    <div class="stats"><div class="stat"><b style="color:var(--mint)">${sum.known}</b><span>наизусть (&lt;${(S.baseLimit/1000).toFixed(1)} с)</span></div><div class="stat"><b style="color:var(--sun)">${sum.computed}</b><span>считает</span></div><div class="stat"><b style="color:var(--coral)">${sum.new}</b><span>не начинал</span></div></div>
+    <div class="section"><h3>Динамика по дням</h3>${chart}</div>
+    <div class="section"><h3>Среднее время ответа (секунды, последние 5 ответов)</h3><div class="heat grid">${heat}</div><p style="color:var(--muted);font-size:13px">Зелёное — автоматизм, красное — считает или ошибается. Точка — ещё не спрашивали.</p></div>
+    <div class="section"><h3>Слабые места</h3>${weak.length?`<table><tr><th>Пример</th><th>Уровень</th><th>Время</th><th>Ошибок</th><th>Показов</th></tr>${weak.map(f=>`<tr><td><b>${f.a} × ${f.b} = ${f.a*f.b}</b></td><td>${f.level}/5</td><td>${fmtTime(avgTime(f))}</td><td>${f.wrong}</td><td>${f.seen}</td></tr>`).join('')}</table>`:'<p class="lead">Явных слабых мест нет.</p>'}
+    ${notLearned.length?`<p style="color:var(--muted);font-size:14px">Ещё не изучались (${notLearned.length}): ${notLearned.map(f=>f.a+'×'+f.b).join(', ')}</p>`:''}</div>
+    <div class="section"><h3>Журнал занятий</h3>${sessions.length?`<table><tr><th>Дата</th><th>Режим</th><th>Минут</th><th>Ответов</th><th>Точность</th></tr>${sessions.map(s=>`<tr><td>${new Date(s.start).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td><td>${modeName[s.mode]||s.mode}</td><td>${Math.max(1,Math.round(s.ms/60000))}</td><td>${s.answers}</td><td>${s.answers?Math.round(s.correct/s.answers*100):0}%</td></tr>`).join('')}</table>`:'<p class="lead">Занятий пока не было.</p>'}</div>
+    <div class="section card"><h3>Настройки</h3>
+      <label>Порог «знаю наизусть»: <b id="limv">${(S.baseLimit/1000).toFixed(1)} с</b> <span style="color:var(--muted);font-size:13px">(на низких уровнях даётся +1,5 с; ужесточайте постепенно до 3 с)</span></label>
+      <input type="range" id="lim" min="2500" max="6000" step="250" value="${S.baseLimit}">
+      <label style="display:block;margin-top:12px">Цель дня: <b id="goalv">${S.dailyGoal}</b> ответов</label>
+      <input type="range" id="goal" min="10" max="100" step="5" value="${S.dailyGoal}">
+      <div class="row" style="margin-top:14px"><button class="btn small" id="pin">Сменить PIN</button><button class="btn small" id="export">Экспорт данных</button><button class="btn small coral" id="reset">Сбросить прогресс</button></div>
+    </div>`);
+  document.getElementById('home').onclick=home;
+  document.getElementById('lim').oninput=e=>{S.baseLimit=Number(e.target.value);document.getElementById('limv').textContent=(S.baseLimit/1000).toFixed(1)+' с';save();};
+  document.getElementById('goal').oninput=e=>{S.dailyGoal=Number(e.target.value);document.getElementById('goalv').textContent=S.dailyGoal;save();};
+  document.getElementById('pin').onclick=()=>{ const p=prompt('Новый PIN (4 цифры):'); if(p&&/^\d{4}$/.test(p)){S.pin=p;save();alert('PIN изменён');} };
+  document.getElementById('export').onclick=()=>{ const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tablica-'+dayStr()+'.json'; a.click(); };
+  document.getElementById('reset').onclick=()=>{ if(confirm('Удалить весь прогресс? Это нельзя отменить.')){ const pin=S.pin; S=DEFAULT(); S.pin=pin; save(); home(); } };
+}
+
+window.addEventListener('beforeunload',endSession);
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+home();
+</script>
+</body>
+</html>
