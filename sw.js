@@ -12,7 +12,12 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // Кэшируем по одному: отсутствие какой-то иконки не должно ломать установку офлайн-режима.
+  e.waitUntil(
+    caches.open(CACHE).then(c => Promise.all(
+      ASSETS.map(a => fetch(a).then(r => { if (r.ok) return c.put(a, r); }).catch(() => {}))
+    )).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
